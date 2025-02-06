@@ -1,0 +1,194 @@
+// import { Form, Input, Button } from "antd";
+// import React, { useEffect } from "react";
+// import { Row, Col, Typography } from "antd";
+// import "./Login.css";
+// import { useHistory } from "react-router-dom";
+// import { loginUser } from "../actions/authActions";
+// import { connect } from "react-redux";
+// import { Link } from "react-router-dom";
+
+// function Login(props) {
+//   const history = useHistory();
+//   const { Title } = Typography;
+//   const { isLoading } = props;
+
+//   const tailLayout = {
+//     wrapperCol: {
+//       offset: 8,
+//       span: 16,
+//     },
+//   };
+
+//   useEffect(() => {
+//     if (props.isAuthenticated) {
+//       history.push("/");
+//     }
+//   }, [props]);
+
+//   const submitForm = (values) => {
+//     props.sendLoginRequest(values);
+//   };
+
+//   const onFinishFailed = (errorInfo) => {
+//     console.log("Failed:", errorInfo);
+//   };
+//   return (
+//     <>
+//       <Row justify="center" align="middle" className="hero">
+//         <Col xs={22} sm={22} md={6} lg={6} className="signin__container">
+//           <p className="sub-title">🎓 EMS</p>
+
+//           <Form
+//             name="basic"
+//             initialValues={{
+//               remember: true,
+//             }}
+//             onFinish={submitForm}
+//             onFinishFailed={onFinishFailed}
+//           >
+//             <Form.Item
+//               name="email"
+//               rules={[
+//                 {
+//                   required: true,
+//                   message: "Please input your email!",
+//                 },
+//               ]}
+//             >
+//               <Input placeholder="Email" />
+//             </Form.Item>
+
+//             <Form.Item
+//               name="password"
+//               rules={[
+//                 {
+//                   required: true,
+//                   message: "Please input your password!",
+//                 },
+//               ]}
+//             >
+//               <Input.Password placeholder="Password" />
+//             </Form.Item>
+//             <div
+//               className="link"
+//               style={{
+//                 textAlign: "center",
+//                 fontWeight: 500,
+//                 marginBottom: "15px",
+//               }}
+//             >
+//               <Link to="/signup">New here? Create your account.</Link>
+//             </div>
+//             <Form.Item>
+//               <Button
+//                 type="primary"
+//                 className="sign__in"
+//                 style={{ minWidth: "44px" }}
+//                 loading={isLoading}
+//                 htmlType="submit"
+//               >
+//                 {!isLoading ? "Sign In" : "Logging In"}
+//               </Button>
+//             </Form.Item>
+//           </Form>
+//         </Col>
+//       </Row>
+//     </>
+//   );
+// }
+
+// const mapStateToProps = (state) => {
+//   return {
+//     isAuthenticated: state.auth.isAuthenticated,
+//     isLoading: state.auth.isLoading,
+//   };
+// };
+// const mapDispatchToProps = (dispatch) => {
+//   return {
+//     sendLoginRequest: (values) => dispatch(loginUser(values)),
+//   };
+// };
+
+// export default connect(mapStateToProps, mapDispatchToProps)(Login);
+
+
+import { Form, Input, Button, notification } from "antd";
+import React, { useEffect } from "react";
+import { Row, Col } from "antd";
+import "./Login.css";
+import { useHistory } from "react-router-dom";
+import { loginUser } from "../actions/authActions";
+import { connect } from "react-redux";
+import { Link } from "react-router-dom";
+
+function Login(props) {
+  const history = useHistory();
+  const { isLoading, loginError, isAuthenticated } = props;
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      history.push("/");
+    }
+  }, [isAuthenticated]);
+
+  // Show error notification when login fails
+  useEffect(() => {
+    if (loginError) {
+      notification.error({
+        message: "Login Failed,Please check the credentials",
+        description: loginError, // Displaying the actual error message
+        duration: 3,
+      });
+    }
+  }, [loginError]);
+
+  const submitForm = (values) => {
+    props.sendLoginRequest(values);
+  };
+
+  return (
+    <Row justify="center" align="middle" className="hero">
+      <Col xs={22} sm={22} md={6} lg={6} className="signin__container">
+        <p className="sub-title">🎓 EMS</p>
+
+        <Form name="login" onFinish={submitForm}>
+          <Form.Item
+            name="email"
+            rules={[{ required: true, message: "Please input your email!" }]}
+          >
+            <Input placeholder="Email" />
+          </Form.Item>
+
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: "Please input your password!" }]}
+          >
+            <Input.Password placeholder="Password" />
+          </Form.Item>
+
+          <div className="link" style={{ textAlign: "center", fontWeight: 500, marginBottom: "15px" }}>
+            <Link to="/signup">New here? Create your account.</Link>
+          </div>
+
+          <Form.Item>
+            <Button type="primary" className="sign__in" loading={isLoading} htmlType="submit">
+              {!isLoading ? "Sign In" : "Logging In"}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Col>
+    </Row>
+  );
+}
+
+const mapStateToProps = (state) => ({
+  isAuthenticated: state.auth.isAuthenticated,
+  isLoading: state.auth.isLoading,
+  loginError: state.auth.loginError, // Get error message from Redux
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  sendLoginRequest: (values) => dispatch(loginUser(values)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login);
