@@ -31,93 +31,51 @@ class HandleLiveTest extends Component {
   }
 
   componentDidMount() {
-    //  const answers = question
-    // make a call using redux
     this.props.counterEnd(this.submitTestOnCounterEnd);
 
     this.setState({
       questionsData: this.props.selectedTest.questions,
-      // questionsData:questions,
       answers: this.props.selectedTest.answers,
       testID: this.props.testID,
       testName: this.props.selectedTest.testName,
       totalPending: this.props.selectedTest.questions.length,
     });
-    // fire function given by redux
+
+    // **Prevent Tab Switching: Detect if user switches tabs or minimizes the window**
+    document.addEventListener("visibilitychange", this.handleTabSwitch);
+    window.addEventListener("blur", this.handleTabSwitch);
   }
 
-  changeActivatedQueFromFooter = (changeActivatedQue) => {
-    if (changeActivatedQue !== "flag__question") {
-      this.setState({
-        footerClick: true,
-      });
-      this.child.changeActivatedQueInChild(changeActivatedQue);
-    } else {
-      this.triggerFlag();
-      if (this.state.flag <= this.state.questionsData.length) {
-        this.setState({
-          flag: this.state.flag + 1,
-        });
-      }
+  componentWillUnmount() {
+    // Remove event listeners when the component is unmounted
+    document.removeEventListener("visibilitychange", this.handleTabSwitch);
+    window.removeEventListener("blur", this.handleTabSwitch);
+  }
+
+  /**
+   * Detects if the user switches tabs or minimizes the window.
+   * If so, it alerts them and submits the test.
+   */
+  handleTabSwitch = () => {
+    if (document.hidden || document.visibilityState === "hidden") {
+      alert("Tab switching detected! Your test is being submitted.");
+      this.handleSubmitTest();
     }
   };
+
   handleSubmitTest = () => {
     this.child.submitTest();
   };
+
+  submitTestOnCounterEnd = () => {
+    this.handleSubmitTest();
+  };
+
   changeParentActivatedQue = (index) => {
     this.setState({
       activateQue: index,
       footerClick: true,
     });
-  };
-  submitTestOnCounterEnd = () => {
-    this.handleSubmitTest();
-  };
-
-  handleFooterButtons = (buttonClicked) => {
-    this.changeActivatedQueFromFooter(buttonClicked);
-  };
-
-  handleClearResponse = (index, blankClearAttempt) => {
-    if (!blankClearAttempt) {
-      let updatedUserAnswers = this.state.userAnswers;
-      updatedUserAnswers[index] = undefined;
-      this.setState({
-        totalAnswered: this.state.totalAnswered - 1,
-        totalPending: this.state.totalPending + 1,
-        userAnswers: updatedUserAnswers,
-        activateQue: index,
-        footerClick: false,
-        answered: false,
-      });
-    }
-  };
-  questionAnswered = (index, option, changed) => {
-    if (!changed) {
-      let updatedUserAnswers = this.state.userAnswers;
-      updatedUserAnswers[index] = option;
-      this.setState({
-        totalAnswered: this.state.totalAnswered + 1,
-        totalPending: this.state.totalPending - 1,
-        userAnswers: updatedUserAnswers,
-        activateQue: index,
-        footerClick: false,
-        answered: true,
-      });
-    } else {
-      // answers array
-      let updatedUserAnswers = this.state.userAnswers;
-      updatedUserAnswers[index] = option;
-      this.setState({
-        userAnswers: updatedUserAnswers,
-        activateQue: index,
-        footerClick: false,
-        answered: true,
-      });
-    }
-  };
-  handleQuestionClick = (index) => {
-    this.child.changeActivatedQueInChild(index);
   };
 
   render() {
